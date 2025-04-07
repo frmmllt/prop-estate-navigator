@@ -106,10 +106,10 @@ const LetterTemplateEditor: React.FC = () => {
   };
 
   const previewContent = () => {
-    // Replace variables with example values for preview
+    // Replace replaceAll with split and join which are compatible with all TS/JS versions
     let preview = htmlContent;
     templateVariables.forEach(variable => {
-      preview = preview.replaceAll(variable.key, variable.example);
+      preview = preview.split(variable.key).join(variable.example);
     });
     return preview;
   };
