@@ -1,20 +1,15 @@
 
 import React, { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { LetterTemplate, mockTemplates } from "@/types/templates";
+import { LetterTemplate } from "@/types/templates";
 import TemplateCard from "./TemplateCard";
 import TemplateSearchHeader from "./TemplateSearchHeader";
 import EmptyTemplatesList from "./EmptyTemplatesList";
+import { useFindTemplates } from "@/hooks/useFindTemplates";
 
 const LetterTemplateList: React.FC = () => {
   const { toast } = useToast();
-  const [templates, setTemplates] = useState<LetterTemplate[]>(mockTemplates);
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const filteredTemplates = templates.filter(template => 
-    template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    template.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const { templates, setTemplates, filteredTemplates, searchTerm, setSearchTerm } = useFindTemplates();
 
   const handleDelete = (id: string) => {
     setTemplates(templates.filter(template => template.id !== id));
