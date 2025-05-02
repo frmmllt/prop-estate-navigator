@@ -1,14 +1,15 @@
 
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Home, Upload, FileText, Settings, User, LogIn, LogOut } from "lucide-react";
+import { Home, Upload, FileText, Settings, User, LogIn, LogOut, Users } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Header: React.FC = () => {
   const isMobile = useIsMobile();
   const { isAuthenticated, logout, user } = useAuth();
+  const location = useLocation();
 
   return (
     <header className="bg-white border-b border-border sticky top-0 z-10">
@@ -21,33 +22,42 @@ const Header: React.FC = () => {
         <nav className="flex items-center gap-1 sm:gap-2">
           {isAuthenticated && !isMobile && (
             <>
-              <Button asChild variant="ghost" size="sm">
+              <Button asChild variant={location.pathname.includes('/properties') ? "default" : "ghost"} size="sm">
                 <Link to="/properties" className="flex items-center gap-2">
                   <Home className="h-4 w-4" />
                   <span>Propriétés</span>
                 </Link>
               </Button>
               
-              <Button asChild variant="ghost" size="sm">
+              <Button asChild variant={location.pathname.includes('/upload') ? "default" : "ghost"} size="sm">
                 <Link to="/upload" className="flex items-center gap-2">
                   <Upload className="h-4 w-4" />
                   <span>Importer</span>
                 </Link>
               </Button>
               
-              <Button asChild variant="ghost" size="sm">
+              <Button asChild variant={location.pathname.includes('/templates') ? "default" : "ghost"} size="sm">
                 <Link to="/templates" className="flex items-center gap-2">
                   <FileText className="h-4 w-4" />
                   <span>Modèles</span>
                 </Link>
               </Button>
+              
+              {user?.role === "admin" && (
+                <Button asChild variant={location.pathname.includes('/admin') ? "default" : "ghost"} size="sm">
+                  <Link to="/admin/users" className="flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    <span>Utilisateurs</span>
+                  </Link>
+                </Button>
+              )}
             </>
           )}
           
           {isAuthenticated && (
-            <Button asChild variant="ghost" size="icon">
-              <Link to="/settings">
-                <Settings className="h-5 w-5" />
+            <Button asChild variant={location.pathname === '/profile' ? "default" : "ghost"} size="icon">
+              <Link to="/profile">
+                <User className="h-5 w-5" />
               </Link>
             </Button>
           )}

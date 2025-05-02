@@ -12,6 +12,8 @@ import UploadPage from "./pages/UploadPage";
 import TemplatesPage from "./pages/TemplatesPage";
 import TemplateEditorPage from "./pages/TemplateEditorPage";
 import LoginPage from "./pages/LoginPage";
+import ProfilePage from "./pages/ProfilePage";
+import AdminUsersPage from "./pages/AdminUsersPage";
 import PrivateRoute from "./components/PrivateRoute";
 import { AuthProvider } from "./contexts/AuthContext";
 
@@ -38,10 +40,11 @@ const App = () => (
               <Route path="/templates/new" element={<TemplateEditorPage />} />
               <Route path="/templates/:id/edit" element={<TemplateEditorPage />} />
               <Route path="/templates/:id" element={<TemplateEditorPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/admin/users" element={<AdminUsersPage />} />
             </Route>
             
             {/* Redirection et 404 */}
-            <Route path="/profile" element={<Navigate to="/" replace />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
