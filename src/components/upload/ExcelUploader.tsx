@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Upload, CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import { Upload, CheckCircle, XCircle, AlertCircle, FileText } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 
@@ -103,9 +103,17 @@ const ExcelUploader: React.FC = () => {
     setUploadStatus("idle");
   };
 
+  const downloadTemplate = () => {
+    // Simulation de téléchargement d'un modèle
+    toast({
+      title: "Téléchargement du modèle",
+      description: "Le modèle d'import est en cours de téléchargement.",
+    });
+  };
+
   return (
-    <div className="w-full max-w-2xl mx-auto">
-      <div className="space-y-6">
+    <div className="w-full max-w-3xl mx-auto">
+      <div className="space-y-8">
         <div
           className={`border-2 border-dashed rounded-lg p-8 text-center ${
             isDragging ? "border-primary bg-primary/5" : "border-border"
@@ -161,11 +169,17 @@ const ExcelUploader: React.FC = () => {
                     id="excel-file"
                     onChange={handleFileInputChange}
                   />
-                  <label htmlFor="excel-file">
-                    <Button asChild>
-                      <span>Sélectionner un fichier</span>
+                  <div className="flex flex-col sm:flex-row justify-center gap-2">
+                    <label htmlFor="excel-file">
+                      <Button asChild>
+                        <span>Sélectionner un fichier</span>
+                      </Button>
+                    </label>
+                    <Button variant="outline" onClick={downloadTemplate} className="flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      <span>Télécharger le modèle</span>
                     </Button>
-                  </label>
+                  </div>
                 </div>
               )}
             </>
@@ -204,10 +218,69 @@ const ExcelUploader: React.FC = () => {
           <ul className="space-y-2 list-disc list-inside text-muted-foreground">
             <li>Le fichier doit être au format Excel (.xlsx, .xls) ou CSV (.csv)</li>
             <li>La première ligne doit contenir les en-têtes des colonnes</li>
-            <li>Les colonnes obligatoires sont : Référence, Type, Adresse, Ville, Code postal, Prix et Surface</li>
-            <li>Taille maximale du fichier : 10 MB</li>
-            <li>Nombre maximal de lignes : 10 000</li>
+            <li>Colonnes prises en charge correspondant au fichier source :</li>
           </ul>
+
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-muted">
+                  <th className="p-2 border text-left">Colonne source</th>
+                  <th className="p-2 border text-left">Description</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                <tr>
+                  <td className="p-2 border">Etat</td>
+                  <td className="p-2 border">État du bien (disponible, vendu, etc.)</td>
+                </tr>
+                <tr>
+                  <td className="p-2 border">Immeuble</td>
+                  <td className="p-2 border">Nom ou référence de l'immeuble</td>
+                </tr>
+                <tr>
+                  <td className="p-2 border">Numéro</td>
+                  <td className="p-2 border">Numéro de voie</td>
+                </tr>
+                <tr>
+                  <td className="p-2 border">Rue</td>
+                  <td className="p-2 border">Nom de la rue</td>
+                </tr>
+                <tr>
+                  <td className="p-2 border">Strasbourg</td>
+                  <td className="p-2 border">Ville</td>
+                </tr>
+                <tr>
+                  <td className="p-2 border">S/P</td>
+                  <td className="p-2 border">Civilité du propriétaire</td>
+                </tr>
+                <tr>
+                  <td className="p-2 border">NOM_PRENOM</td>
+                  <td className="p-2 border">Nom et prénom du propriétaire</td>
+                </tr>
+                <tr>
+                  <td className="p-2 border">Type</td>
+                  <td className="p-2 border">Type de bien (appartement, maison, etc.)</td>
+                </tr>
+                <tr>
+                  <td className="p-2 border">SIRET</td>
+                  <td className="p-2 border">SIRET de la société propriétaire</td>
+                </tr>
+                <tr>
+                  <td className="p-2 border">Telephone</td>
+                  <td className="p-2 border">Numéro de téléphone du contact</td>
+                </tr>
+                <tr>
+                  <td className="p-2 border">Mail</td>
+                  <td className="p-2 border">Adresse email du contact</td>
+                </tr>
+                <tr>
+                  <td className="p-2 border">Observations</td>
+                  <td className="p-2 border">Notes diverses sur le bien</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>

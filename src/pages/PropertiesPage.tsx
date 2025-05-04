@@ -19,11 +19,13 @@ const PropertiesPage: React.FC = () => {
     const search = searchTerm.toLowerCase();
     const filtered = properties.filter(property => 
       property.reference.toLowerCase().includes(search) ||
-      property.address.toLowerCase().includes(search) ||
-      property.city.toLowerCase().includes(search) ||
-      property.postalCode.toLowerCase().includes(search) ||
+      property.address.street.toLowerCase().includes(search) ||
+      property.address.city.toLowerCase().includes(search) ||
+      property.address.postalCode.toLowerCase().includes(search) ||
       property.type.toLowerCase().includes(search) ||
-      (property.ownerName && property.ownerName.toLowerCase().includes(search))
+      (property.owners && property.owners.length > 0 && 
+        (('name' in property.owners[0] && property.owners[0].name?.toLowerCase().includes(search)) ||
+         ('lastName' in property.owners[0] && property.owners[0].lastName?.toLowerCase().includes(search))))
     );
     
     setFilteredProperties(filtered);
@@ -38,28 +40,31 @@ const PropertiesPage: React.FC = () => {
     
     if (filters.city) {
       filtered = filtered.filter(property => 
-        property.city.toLowerCase().includes(filters.city!.toLowerCase())
+        property.address.city.toLowerCase().includes(filters.city!.toLowerCase())
       );
     }
     
     if (filters.minPrice !== undefined) {
-      filtered = filtered.filter(property => property.price >= filters.minPrice!);
+      filtered = filtered.filter(property => property.financials.price >= filters.minPrice!);
     }
     
     if (filters.maxPrice !== undefined) {
-      filtered = filtered.filter(property => property.price <= filters.maxPrice!);
+      filtered = filtered.filter(property => property.financials.price <= filters.maxPrice!);
     }
     
     if (filters.minSurface !== undefined) {
-      filtered = filtered.filter(property => property.surface >= filters.minSurface!);
+      filtered = filtered.filter(property => property.features.surface >= filters.minSurface!);
     }
     
     if (filters.maxSurface !== undefined) {
-      filtered = filtered.filter(property => property.surface <= filters.maxSurface!);
+      filtered = filtered.filter(property => property.features.surface <= filters.maxSurface!);
     }
     
-    if (filters.minRooms !== undefined) {
-      filtered = filtered.filter(property => property.rooms >= filters.minRooms!);
+    if (filters.minRooms !== undefined && filters.minRooms > 0) {
+      filtered = filtered.filter(property => 
+        property.features.rooms !== undefined && 
+        property.features.rooms >= filters.minRooms!
+      );
     }
     
     if (filters.status !== undefined) {

@@ -13,6 +13,14 @@ import {
   DropdownMenuCheckboxItem
 } from "@/components/ui/dropdown-menu";
 import { defaultColumns } from "@/data/mockProperties";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface PropertyTableProps {
   properties: Property[];
@@ -53,12 +61,23 @@ const PropertyTable: React.FC<PropertyTableProps> = ({ properties, onFilter }) =
     }
   };
 
+  // Fonction pour accéder à une propriété imbriquée par chemin (ex: "financials.price")
+  const getNestedValue = (obj: any, path: string) => {
+    const keys = path.split('.');
+    return keys.reduce((value, key) => {
+      return value && typeof value === 'object' ? value[key] : undefined;
+    }, obj);
+  };
+
   const sortedProperties = React.useMemo(() => {
     if (!sortColumn) return properties;
     
     return [...properties].sort((a, b) => {
-      const aValue = a[sortColumn];
-      const bValue = b[sortColumn];
+      const aValue = getNestedValue(a, sortColumn);
+      const bValue = getNestedValue(b, sortColumn);
+      
+      if (aValue === undefined || aValue === null) return sortDirection === "asc" ? -1 : 1;
+      if (bValue === undefined || bValue === null) return sortDirection === "asc" ? 1 : -1;
       
       if (typeof aValue === "string" && typeof bValue === "string") {
         return sortDirection === "asc"
@@ -66,36 +85,61 @@ const PropertyTable: React.FC<PropertyTableProps> = ({ properties, onFilter }) =
           : bValue.localeCompare(aValue);
       }
       
-      if (aValue === undefined || aValue === null) return sortDirection === "asc" ? -1 : 1;
-      if (bValue === undefined || bValue === null) return sortDirection === "asc" ? 1 : -1;
-      
       return sortDirection === "asc" ? aValue - bValue : bValue - aValue;
     });
   }, [properties, sortColumn, sortDirection]);
 
   const formatValue = (property: Property, columnId: string) => {
-    const value = property[columnId];
+    const value = getNestedValue(property, columnId);
     
     if (value === undefined || value === null) return "-";
     
     switch (columnId) {
-      case "price":
+      case "financials.price":
         return `${Number(value).toLocaleString()} €`;
-      case "surface":
+      case "features.surface":
         return `${value} m²`;
       case "status":
         return value === "available" 
           ? "Disponible" 
           : value === "pending" 
             ? "En cours" 
-            : "Vendu";
-      case "lastContact":
+            : value === "sold"
+              ? "Vendu"
+              : value === "negotiation"
+                ? "Négociation"
+                : value === "option"
+                  ? "Option"
+                  : value;
+      case "contacts.lastContactDate":
         return value ? new Date(value).toLocaleDateString() : "-";
-      case "hasElevator":
-      case "hasBalcony":
-      case "hasParking":
-      case "hasGarden":
+      case "features.hasElevator":
+      case "features.hasBalcony":
+      case "features.hasParking":
+      case "features.hasGarden":
         return value ? "Oui" : "Non";
+      case "opportunityScore":
+        return value ? `${value}/10` : "-";
+      case "financials.estimatedRentalYield":
+        return value ? `${value}%` : "-";
+      case "financials.roi":
+        return value ? `${value}%` : "-";
+      case "owners.0.lastName":
+        if (property.owners && property.owners.length > 0) {
+          const owner = property.owners[0];
+          if ('lastName' in owner) {
+            return owner.firstName ? `${owner.lastName} ${owner.firstName}` : owner.lastName;
+          }
+        }
+        return "-";
+      case "owners.0.name":
+        if (property.owners && property.owners.length > 0) {
+          const owner = property.owners[0];
+          if ('name' in owner) {
+            return owner.name;
+          }
+        }
+        return "-";
       default:
         return value;
     }
@@ -142,64 +186,62 @@ const PropertyTable: React.FC<PropertyTableProps> = ({ properties, onFilter }) =
         </div>
       </div>
       
-      <div className="rounded-md border border-border overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full data-table">
-            <thead>
-              <tr>
-                <th className="w-[50px]">
-                  <Checkbox />
-                </th>
-                {columns
-                  .filter((column) => column.visible)
-                  .map((column) => (
-                    <th 
-                      key={column.id}
-                      className={column.sortable ? "cursor-pointer select-none" : ""}
-                      onClick={column.sortable ? () => handleSort(column.id) : undefined}
-                    >
-                      <div className="flex items-center gap-1">
-                        {column.label}
-                        {sortColumn === column.id && (
-                          sortDirection === "asc" ? (
-                            <ArrowUp className="h-4 w-4" />
-                          ) : (
-                            <ArrowDown className="h-4 w-4" />
-                          )
-                        )}
-                      </div>
-                    </th>
-                  ))}
-              </tr>
-            </thead>
-            <tbody>
-              {sortedProperties.length === 0 ? (
-                <tr>
-                  <td colSpan={columns.filter(col => col.visible).length + 1} className="text-center py-4">
-                    Aucune propriété trouvée
-                  </td>
-                </tr>
-              ) : (
-                sortedProperties.map((property) => (
-                  <tr 
-                    key={property.id} 
-                    onClick={() => handleRowClick(property)}
-                    className="cursor-pointer"
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[50px]">
+                <Checkbox />
+              </TableHead>
+              {columns
+                .filter((column) => column.visible)
+                .map((column) => (
+                  <TableHead 
+                    key={column.id}
+                    className={column.sortable ? "cursor-pointer select-none" : ""}
+                    onClick={column.sortable ? () => handleSort(column.id) : undefined}
                   >
-                    <td onClick={(e) => e.stopPropagation()}>
-                      <Checkbox />
-                    </td>
-                    {columns
-                      .filter((column) => column.visible)
-                      .map((column) => (
-                        <td key={column.id}>{formatValue(property, column.id)}</td>
-                      ))}
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                    <div className="flex items-center gap-1">
+                      {column.label}
+                      {sortColumn === column.id && (
+                        sortDirection === "asc" ? (
+                          <ArrowUp className="h-4 w-4" />
+                        ) : (
+                          <ArrowDown className="h-4 w-4" />
+                        )
+                      )}
+                    </div>
+                  </TableHead>
+                ))}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {sortedProperties.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={columns.filter(col => col.visible).length + 1} className="text-center py-4">
+                  Aucune propriété trouvée
+                </TableCell>
+              </TableRow>
+            ) : (
+              sortedProperties.map((property) => (
+                <TableRow 
+                  key={property.id} 
+                  onClick={() => handleRowClick(property)}
+                  className="cursor-pointer hover:bg-muted/50"
+                >
+                  <TableCell className="w-[50px]" onClick={(e) => e.stopPropagation()}>
+                    <Checkbox />
+                  </TableCell>
+                  {columns
+                    .filter((column) => column.visible)
+                    .map((column) => (
+                      <TableCell key={column.id}>{formatValue(property, column.id)}</TableCell>
+                    ))}
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
       </div>
     </div>
   );
