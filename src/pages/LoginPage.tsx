@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -23,7 +24,6 @@ const LoginPage: React.FC = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const { email, password } = { email, password };
       await loginMutation.mutateAsync({ email, password });
       toast({
         title: "Connexion réussie",
@@ -105,3 +105,4 @@ const LoginPage: React.FC = () => {
 };
 
 export default LoginPage;
+
