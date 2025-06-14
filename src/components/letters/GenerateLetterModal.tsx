@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import { LetterTemplate, mockTemplates } from "@/types/templates";
 import html2pdf from "html2pdf.js";
 import { useAuth } from "@/contexts/AuthContext";
 import { logUserAction } from "@/utils/userLogger";
+import { logLetterGeneration } from "@/utils/letterHistory"; // <== NEW
 
 interface GenerateLetterModalProps {
   open: boolean;
@@ -105,6 +107,18 @@ const GenerateLetterModal: React.FC<GenerateLetterModalProps> = ({ open, onClose
         templateId: selectedTemplateId,
         usedVariables: templateVariables.filter(v => content.includes(v.example)).map(v => v.key),
       });
+
+      // Also log to letter history (NEW)
+      const templateObj = selectedTemplateId === "default"
+        ? { id: "default", name: "Modèle classique" }
+        : mockTemplates.find((t) => t.id === selectedTemplateId);
+
+      logLetterGeneration(
+        property?.id,
+        selectedTemplateId,
+        templateObj?.name || selectedTemplateId,
+        user.email
+      );
     }
 
     if (pdfPreviewRef.current) {

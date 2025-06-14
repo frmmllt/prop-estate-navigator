@@ -21,6 +21,10 @@ import {
 } from "lucide-react";
 import { Property } from "@/types/property";
 import GenerateLetterModal from "@/components/letters/GenerateLetterModal";
+import { useAuth } from "@/contexts/AuthContext";
+import { getLetterHistory } from "@/utils/letterHistory";
+import LetterHistoryTable from "@/components/letters/LetterHistoryTable";
+import { mockTemplates } from "@/types/templates";
 
 interface PropertyDetailProps {
   property?: Property;
@@ -148,6 +152,23 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({ property }) => {
     );
   };
 
+  // AUTH access:
+  const { user } = useAuth();
+
+  // Determine access for letter history
+  let canSeeHistoryTab = false;
+  let letterHistoryEntries: any[] = [];
+  if (user) {
+    if (user.role === "admin") {
+      canSeeHistoryTab = true;
+      letterHistoryEntries = getLetterHistory(property.id);
+    } else if (user.role === "user") {
+      // only standard users' own history (but no tab! but we can reuse table if needed in the future)
+      canSeeHistoryTab = false;
+      // letterHistoryEntries = getLetterHistory(property.id).filter(e => e.userEmail === user.email);
+    }
+  }
+
   return (
     <div className="w-full">
       <GenerateLetterModal open={showLetterModal} onClose={() => setShowLetterModal(false)} property={property} />
@@ -188,11 +209,14 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({ property }) => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="details">Détails</TabsTrigger>
               <TabsTrigger value="financials">Financiers</TabsTrigger>
               <TabsTrigger value="map">Carte</TabsTrigger>
               <TabsTrigger value="owner">Propriétaire</TabsTrigger>
+              {canSeeHistoryTab && (
+                <TabsTrigger value="letterhistory">Historique courriers</TabsTrigger>
+              )}
             </TabsList>
             
             <TabsContent value="details" className="mt-4">
@@ -769,6 +793,19 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({ property }) => {
           </Card>
         </div>
       </div>
+      
+      {canSeeHistoryTab && (
+        <div className="mt-6">
+          <h3 className="text-xl font-bold mb-4">Historique des courriers générés</h3>
+          <p className="text-muted-foreground text-sm mb-2">
+            Visualisez tous les courriers générés pour ce bien, par tous les utilisateurs.
+          </p>
+          <LetterHistoryTable
+            entries={letterHistoryEntries}
+            templates={mockTemplates}
+          />
+        </div>
+      )}
     </div>
   );
 };
