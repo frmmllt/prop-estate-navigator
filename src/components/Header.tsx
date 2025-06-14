@@ -2,7 +2,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Home, Upload, FileText, Settings, User, LogIn, LogOut, Users } from "lucide-react";
+import { Home, Upload, FileText, Settings, User, LogIn, LogOut, Users, BookOpen, Map } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -112,3 +112,4 @@ const Header: React.FC = () => {
 };
 
 export default Header;
+
