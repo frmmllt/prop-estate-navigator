@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -16,6 +15,7 @@ import ProfilePage from "./pages/ProfilePage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import PrivateRoute from "./components/PrivateRoute";
 import { AuthProvider } from "./contexts/AuthContext";
+import MapPage from "./pages/MapPage";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +42,7 @@ const App = () => (
               <Route path="/templates/:id" element={<TemplateEditorPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/admin/users" element={<AdminUsersPage />} />
+              <Route path="/map" element={<MapPage />} />
             </Route>
             
             {/* Redirection et 404 */}
