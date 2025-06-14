@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -21,6 +20,7 @@ import {
   Briefcase
 } from "lucide-react";
 import { Property } from "@/types/property";
+import GenerateLetterModal from "@/components/letters/GenerateLetterModal";
 
 interface PropertyDetailProps {
   property?: Property;
@@ -28,6 +28,7 @@ interface PropertyDetailProps {
 
 const PropertyDetail: React.FC<PropertyDetailProps> = ({ property }) => {
   const [activeTab, setActiveTab] = useState("details");
+  const [showLetterModal, setShowLetterModal] = useState(false);
   
   if (!property) {
     return (
@@ -149,6 +150,7 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({ property }) => {
 
   return (
     <div className="w-full">
+      <GenerateLetterModal open={showLetterModal} onClose={() => setShowLetterModal(false)} property={property} />
       <div className="mb-6 flex flex-col sm:flex-row gap-4 justify-between items-start">
         <div>
           <Link to="/properties" className="text-muted-foreground hover:text-foreground flex items-center gap-1 mb-2">
@@ -176,7 +178,7 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({ property }) => {
             <Edit className="h-4 w-4" />
             <span>Modifier</span>
           </Button>
-          <Button className="flex items-center gap-2">
+          <Button className="flex items-center gap-2" onClick={() => setShowLetterModal(true)}>
             <FileText className="h-4 w-4" />
             <span>Générer un courrier</span>
           </Button>
