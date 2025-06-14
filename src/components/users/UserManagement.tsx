@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -31,13 +30,14 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
 
-// Type des utilisateurs
+// Type des utilisateurs avec sections autorisées
 interface User {
   id: string;
   name: string;
   email: string;
   role: "admin" | "user";
   active: boolean;
+  sectionsAutorisees: string[];
 }
 
 // Données de démonstration pour les utilisateurs
@@ -47,28 +47,32 @@ const initialUsers: User[] = [
     name: "Administrateur",
     email: "admin@example.com",
     role: "admin",
-    active: true
+    active: true,
+    sectionsAutorisees: [], // admin accès global
   },
   {
     id: "2",
     name: "Utilisateur",
     email: "user@example.com",
     role: "user",
-    active: true
+    active: true,
+    sectionsAutorisees: ["A", "B"],
   },
   {
     id: "3",
     name: "Jean Dupont",
     email: "jean.dupont@example.com",
     role: "user",
-    active: true
+    active: true,
+    sectionsAutorisees: ["C"],
   },
   {
     id: "4",
     name: "Marie Martin",
     email: "marie.martin@example.com",
     role: "user",
-    active: false
+    active: false,
+    sectionsAutorisees: ["B"],
   }
 ];
 
@@ -83,6 +87,7 @@ const UserManagement = () => {
     email: "",
     password: "",
     role: "user",
+    sectionsAutorisees: "", // champ texte des sections séparées par virgule
   });
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -103,6 +108,12 @@ const UserManagement = () => {
       return;
     }
 
+    // Conversion : sections texte/en tableau
+    const sectionsArray = newUser.sectionsAutorisees
+      .split(",")
+      .map(s => s.trim())
+      .filter(Boolean);
+
     // Ajouter l'utilisateur
     const id = (users.length + 1).toString();
     setUsers([
@@ -112,12 +123,12 @@ const UserManagement = () => {
         name: newUser.name,
         email: newUser.email,
         role: newUser.role as "admin" | "user",
-        active: true
+        active: true,
+        sectionsAutorisees: sectionsArray,
       }
     ]);
 
-    // Réinitialiser et fermer
-    setNewUser({ name: "", email: "", password: "", role: "user" });
+    setNewUser({ name: "", email: "", password: "", role: "user", sectionsAutorisees: "" });
     setIsAddDialogOpen(false);
     
     toast({
@@ -129,7 +140,7 @@ const UserManagement = () => {
   const handleEditUser = () => {
     if (!currentUser) return;
     
-    // Mettre à jour l'utilisateur
+    // On accepte maintenant que currentUser.sectionsAutorisees soit géré par le champ texte de l'UI
     setUsers(users.map(user => 
       user.id === currentUser.id ? currentUser : user
     ));
@@ -276,7 +287,7 @@ const UserManagement = () => {
         </Table>
       </div>
 
-      {/* Dialog d'ajout d'utilisateur */}
+      {/* Dialog d'ajout d'utilisateur - AJOUT champ Section */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -327,6 +338,16 @@ const UserManagement = () => {
                 </Label>
               </div>
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="sections">Sections autorisées</Label>
+              <Input 
+                id="sections"
+                value={newUser.sectionsAutorisees}
+                onChange={(e) => setNewUser({...newUser, sectionsAutorisees: e.target.value})}
+                placeholder="ex : A,B,C (séparés par virgule)"
+              />
+              <span className="text-xs text-muted-foreground">Laisser vide pour accès à toutes sections (admin)</span>
+            </div>
           </div>
           <DialogFooter>
             <DialogClose asChild>
@@ -376,6 +397,24 @@ const UserManagement = () => {
                     {currentUser.role === "admin" ? "Administrateur" : "Utilisateur"}
                   </Label>
                 </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-sections">Sections autorisées</Label>
+                <Input 
+                  id="edit-sections"
+                  value={currentUser.sectionsAutorisees.join(",")}
+                  onChange={(e) =>
+                    setCurrentUser({
+                      ...currentUser,
+                      sectionsAutorisees: e.target.value
+                        .split(",")
+                        .map(s => s.trim())
+                        .filter(Boolean)
+                    })
+                  }
+                  placeholder="ex : A,B,C"
+                />
+                <span className="text-xs text-muted-foreground">Laisser vide pour accès global</span>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-status">Statut</Label>

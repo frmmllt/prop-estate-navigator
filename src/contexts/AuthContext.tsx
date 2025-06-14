@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -13,6 +12,7 @@ interface User {
   email: string;
   name: string;
   role: "admin" | "user";
+  sectionsAutorisees?: string[];
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -30,7 +30,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
 
-  // Vérifier l'état d'authentification au chargement
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
@@ -40,16 +39,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    // Simulation d'une API de connexion
-    // En production, remplacez ceci par un appel API réel
     if (email === "admin@example.com" && password === "password") {
-      const userData = { email, name: "Administrateur", role: "admin" } as User;
+      const userData = { email, name: "Administrateur", role: "admin", sectionsAutorisees: [] } as User;
       setUser(userData);
       setIsAuthenticated(true);
       localStorage.setItem("user", JSON.stringify(userData));
       return true;
     } else if (email === "user@example.com" && password === "password") {
-      const userData = { email, name: "Utilisateur", role: "user" } as User;
+      const userData = { email, name: "Utilisateur", role: "user", sectionsAutorisees: ["A","B"] } as User;
       setUser(userData);
       setIsAuthenticated(true);
       localStorage.setItem("user", JSON.stringify(userData));
