@@ -30,8 +30,11 @@ const demoUsersData = [
 ];
 
 const users: DemoUser[] = demoUsersData.map((u) => ({
-  ...u,
+  email: u.email,
   passwordHash: bcrypt.hashSync(u.password, 8),
+  name: u.name,
+  role: u.role as Role,
+  sectionsAutorisees: u.sectionsAutorisees,
 }));
 
 /**
