@@ -16,6 +16,7 @@ import AdminUsersPage from "./pages/AdminUsersPage";
 import PrivateRoute from "./components/PrivateRoute";
 import { AuthProvider } from "./contexts/AuthContext";
 import MapPage from "./pages/MapPage";
+import DocumentationPage from "./pages/DocumentationPage";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,7 @@ const App = () => (
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/admin/users" element={<AdminUsersPage />} />
               <Route path="/map" element={<MapPage />} />
+              <Route path="/documentation" element={<DocumentationPage />} />
             </Route>
             
             {/* Redirection et 404 */}

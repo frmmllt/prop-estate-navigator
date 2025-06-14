@@ -43,6 +43,20 @@ const Header: React.FC = () => {
                 </Link>
               </Button>
               
+              <Button asChild variant={location.pathname.includes('/map') ? "default" : "ghost"} size="sm">
+                <Link to="/map" className="flex items-center gap-2">
+                  <Map className="h-4 w-4" />
+                  <span>Carte</span>
+                </Link>
+              </Button>
+
+              <Button asChild variant={location.pathname.includes('/documentation') ? "default" : "ghost"} size="sm">
+                <Link to="/documentation" className="flex items-center gap-2">
+                  <BookOpen className="h-4 w-4" />
+                  <span>Documentation</span>
+                </Link>
+              </Button>
+
               {user?.role === "admin" && (
                 <Button asChild variant={location.pathname.includes('/admin') ? "default" : "ghost"} size="sm">
                   <Link to="/admin/users" className="flex items-center gap-2">
