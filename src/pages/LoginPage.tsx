@@ -8,40 +8,33 @@ import { useToast } from "@/components/ui/use-toast";
 import { Lock, LogIn } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { logUserAction } from "@/utils/userLogger";
+import { useApiLogin } from "@/hooks/useApiAuth";
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const loginMutation = useApiLogin();
+
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
     try {
-      const success = await login(email, password);
-      if (success) {
-        logUserAction(email, "login");
-        toast({
-          title: "Connexion réussie",
-          description: "Bienvenue sur PropEstateNavigator",
-        });
-        navigate("/");
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Échec de la connexion",
-          description: "Email ou mot de passe incorrect. Veuillez réessayer.",
-        });
-      }
-    } catch (error) {
+      const { email, password } = { email, password };
+      await loginMutation.mutateAsync({ email, password });
+      toast({
+        title: "Connexion réussie",
+        description: "Bienvenue sur PropEstateNavigator",
+      });
+      navigate("/");
+    } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Une erreur est survenue lors de la connexion.",
+        description: error?.response?.data?.message || "Une erreur est survenue lors de la connexion.",
       });
     } finally {
       setIsLoading(false);

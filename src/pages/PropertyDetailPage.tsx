@@ -5,10 +5,11 @@ import PropertyDetail from "@/components/properties/PropertyDetail";
 import { mockProperties } from "@/data/mockProperties";
 import { useAuth } from "@/contexts/AuthContext";
 import { logUserAction } from "@/utils/userLogger";
+import { useApiProperty } from "@/hooks/useApiProperties";
 
 const PropertyDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const property = mockProperties.find(p => p.id === id);
+  const { data: property, isLoading } = useApiProperty(id);
   const { user } = useAuth();
 
   React.useEffect(() => {
@@ -18,13 +19,16 @@ const PropertyDetailPage: React.FC = () => {
         propertyName: property.name || property.address?.street || "(unknown)"
       });
     }
-    // Only runs once per id (property page view)
   }, [user?.email, property?.id]);
 
   return (
     <Layout>
       <div className="container py-8">
-        <PropertyDetail property={property} />
+        {isLoading ? (
+          <div>Chargement du bien...</div>
+        ) : (
+          <PropertyDetail property={property} />
+        )}
       </div>
     </Layout>
   );

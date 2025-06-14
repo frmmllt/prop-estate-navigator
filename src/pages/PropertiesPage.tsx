@@ -1,15 +1,14 @@
-
 import React, { useState } from "react";
 import Layout from "@/components/Layout";
 import PropertyTable from "@/components/properties/PropertyTable";
 import PropertyFilterPanel from "@/components/properties/PropertyFilter";
-import { mockProperties } from "@/data/mockProperties";
+import { useApiProperties } from "@/hooks/useApiProperties";
 import { Property, PropertyFilter } from "@/types/property";
 import { useAuth } from "@/contexts/AuthContext";
 
 const PropertiesPage: React.FC = () => {
-  const [properties] = useState<Property[]>(mockProperties);
-  const [filteredProperties, setFilteredProperties] = useState<Property[]>(mockProperties);
+  const { data: properties = [], isLoading } = useApiProperties();
+  const [filteredProperties, setFilteredProperties] = useState<Property[]>(properties);
   const { user } = useAuth();
 
   // Filtrage par section selon droits utilisateur
@@ -93,10 +92,14 @@ const PropertiesPage: React.FC = () => {
             <PropertyFilterPanel onApplyFilters={handleFilter} />
           </div>
           <div className="lg:col-span-3">
-            <PropertyTable 
-              properties={filteredProperties} 
-              onFilter={handleSearch} 
-            />
+            {isLoading ? (
+              <div>Chargement des propriétés...</div>
+            ) : (
+              <PropertyTable 
+                properties={filteredProperties} 
+                onFilter={handleSearch} 
+              />
+            )}
           </div>
         </div>
       </div>
