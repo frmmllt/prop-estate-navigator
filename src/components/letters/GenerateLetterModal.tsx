@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,8 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { templateVariables, defaultTemplate } from "@/hooks/useTemplateEditor";
 import { LetterTemplate, mockTemplates } from "@/types/templates";
 import html2pdf from "html2pdf.js";
+import { useAuth } from "@/contexts/AuthContext";
+import { logUserAction } from "@/utils/userLogger";
 
 interface GenerateLetterModalProps {
   open: boolean;
@@ -61,8 +62,9 @@ const fillTemplateVariables = (template: string, property: any) => {
 const GenerateLetterModal: React.FC<GenerateLetterModalProps> = ({ open, onClose, property }) => {
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("default");
   const [editorValue, setEditorValue] = useState<string>(defaultTemplate);
-
   const pdfPreviewRef = useRef<HTMLDivElement>(null);
+
+  const { user } = useAuth();
 
   // On changer de template : mettre à jour l'éditeur !
   React.useEffect(() => {
@@ -95,6 +97,16 @@ const GenerateLetterModal: React.FC<GenerateLetterModalProps> = ({ open, onClose
 
   const handleDownloadPDF = async () => {
     const content = fillTemplateVariables(editorValue, property);
+
+    // Log PDF generation
+    if (user?.email) {
+      logUserAction(user.email, "pdf_generated", {
+        propertyId: property?.id,
+        templateId: selectedTemplateId,
+        usedVariables: templateVariables.filter(v => content.includes(v.example)).map(v => v.key),
+      });
+    }
+
     if (pdfPreviewRef.current) {
       pdfPreviewRef.current.innerHTML = content;
       await html2pdf().from(pdfPreviewRef.current).set({
@@ -107,6 +119,18 @@ const GenerateLetterModal: React.FC<GenerateLetterModalProps> = ({ open, onClose
       pdfPreviewRef.current.innerHTML = "";
     }
   };
+
+  // Log template usage each time template is changed (excluding first render)
+  React.useEffect(() => {
+    if (user?.email && selectedTemplateId) {
+      logUserAction(user.email, "template_used", {
+        templateId: selectedTemplateId,
+        propertyId: property?.id,
+      });
+    }
+    // We purposely log each template selection, as requested
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTemplateId]);
 
   // Affichage
   return (

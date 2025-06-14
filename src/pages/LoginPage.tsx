@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -8,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { Lock, LogIn } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { logUserAction } from "@/utils/userLogger";
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -24,6 +24,7 @@ const LoginPage: React.FC = () => {
     try {
       const success = await login(email, password);
       if (success) {
+        logUserAction(email, "login");
         toast({
           title: "Connexion réussie",
           description: "Bienvenue sur PropEstateNavigator",
