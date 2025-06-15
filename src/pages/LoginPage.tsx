@@ -6,14 +6,23 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
-import { Lock, LogIn } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import { logUserAction } from "@/utils/userLogger";
+import { Lock, LogIn, ShieldOff } from "lucide-react";
 import { useApiLogin } from "@/hooks/useApiAuth";
+import { z } from "zod";
+
+// Validation schema
+const loginSchema = z.object({
+  email: z.string().email({ message: "Adresse email invalide" }),
+  password: z.string().min(6, { message: "Le mot de passe doit contenir au moins 6 caractères" }),
+});
+
+const sanitizeEmail = (str: string) =>
+  str.replace(/[<>"'&]/g, "_"); // simple neutralisation
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [inputError, setInputError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const loginMutation = useApiLogin();
 
@@ -22,9 +31,19 @@ const LoginPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setInputError(null);
+
+    const safeEmail = sanitizeEmail(email);
+
+    const parse = loginSchema.safeParse({ email: safeEmail, password });
+    if (!parse.success) {
+      setInputError(parse.error.issues[0].message);
+      return;
+    }
+
     setIsLoading(true);
     try {
-      await loginMutation.mutateAsync({ email, password });
+      await loginMutation.mutateAsync({ email: safeEmail, password });
       toast({
         title: "Connexion réussie",
         description: "Bienvenue sur PropEstateNavigator",
@@ -53,8 +72,11 @@ const LoginPage: React.FC = () => {
           <CardTitle className="text-2xl">PropEstateNavigator</CardTitle>
           <CardDescription>Connectez-vous pour accéder à la plateforme</CardDescription>
         </CardHeader>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} autoComplete="off">
           <CardContent className="space-y-4">
+            {inputError && (
+              <div className="p-2 rounded bg-red-100 text-sm text-red-700">{inputError}</div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -64,6 +86,7 @@ const LoginPage: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                autoComplete="username"
               />
             </div>
             <div className="space-y-2">
@@ -74,12 +97,16 @@ const LoginPage: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                autoComplete="current-password"
               />
             </div>
-            <div className="text-sm text-gray-500">
-              <p>Comptes de démonstration:</p>
-              <p>- Admin: admin@example.com / password</p>
-              <p>- Utilisateur: user@example.com / password</p>
+            <div className="flex items-start gap-2 bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded">
+              <ShieldOff className="text-yellow-600 mt-1" size={20} />
+              <span className="text-xs text-yellow-800">
+                <strong>Attention :</strong> Cette page de connexion est une démo purement front-end.<br />
+                <b>Ne jamais utiliser de vrais identifiants ou mots de passe !</b><br />
+                Les informations ne sont pas sécurisées, tout comme la mémorisation locale.
+              </span>
             </div>
           </CardContent>
           <CardFooter>
